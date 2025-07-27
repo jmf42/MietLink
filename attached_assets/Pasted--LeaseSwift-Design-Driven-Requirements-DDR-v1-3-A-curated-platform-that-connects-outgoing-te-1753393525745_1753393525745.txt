@@ -1,0 +1,40 @@
+# LeaseSwift — Design‑Driven Requirements (DDR v1.3)
+
+> A curated platform that connects outgoing tenants with **pre‑vetted** incoming candidates, automating the Swiss **Nachmieter** process end‑to‑end — from gated visit applications to final landlord submission.
+
+--------------------------------------------------------------------
+0. SCOPE & SUCCESS CRITERIA
+--------------------------------------------------------------------
+| Item                | Value                                                                                                      |
+|---------------------|------------------------------------------------------------------------------------------------------------|
+| Core use case       | Swiss lease hand‑over (outgoing <-> incoming <-> regie)                                                    |
+| Target markets      | Zurich & Geneva (multilingual ready)                                                                      |
+| Languages (UI & AI) | DE, FR, IT, EN, ES                                                                                        |
+| Primary KPI         | ≤ 5 clicks for outgoing to publish; ≤ 7 min incoming application; ≥ 80 % regie acceptance of top‑3 dossiers |
+| Outcome KPI         | Landlord decision self‑reported on ≥ 90 % of dossiers (voucher incentive)                                 |
+| Empty‑funnel guard  | Share widgets + QR flyer; auto e‑mail “Boost reach” if 0 Green in 72 h                                    |
+
+--------------------------------------------------------------------
+1. TECH STACK
+--------------------------------------------------------------------
+| Layer               | Choice (Phase‑1)                              | Notes / Enhancements                                                               |
+|---------------------|-----------------------------------------------|------------------------------------------------------------------------------------|
+| Front‑end           | Next.js 14 (App Router) + TypeScript + Tailwind CSS | SSR + static export for public link                                                 |
+| Forms & Validation  | React‑Hook‑Form + Zod                         | Shared schemas client/server                                                       |
+| Auth                | Clerk (passwordless magic link + Google OAuth)| Fast UX, no passwords                                                              |
+| API                 | tRPC (type‑safe)                              | Runs inside Next.js                                                                |
+| DB                  | PostgreSQL (Supabase, CH region)             | Row‑level security                                                                 |
+| Storage             | Supabase Storage (S3‑compatible)              | 15‑min presigned uploads                                                           |
+| **LLM**             | OpenAI GPT‑4o via *responses* API             | Few‑shot prompts; cover‑letters, task/slot gen, OCR clean‑up, regie emails, score explain |
+| **OCR**             | AWS Textract + LLM post‑process               | Phase‑1 includes blank‑PDF template mapper (auto‑fills agency forms)               |
+| Calendar            | Calendly Embed API                            | No OAuth; slot webhooks                                                            |
+| **Payments**        | Stripe Checkout — **TWINT primary**, Card/Apple Pay secondary | TWINT is mandated for Swiss user adoption                                          |
+| Event Bus           | Supabase Realtime                             | DB triggers -> edge functions                                                      |
+| Observability       | PostHog (product KPIs), Sentry (errors), Grafana Cloud (metrics) |
+| Hosting             | Vercel functions pinned to `fra1` + Supabase edge (eu‑central‑1) |
+| Rate limiting       | Middleware (5 req/min IP on `/auth/link`, `/documents`) |
+| Error spec          | 400 invalid, 429 rate‑limit, 500 internal (trace‑id) |
+
+--------------------------------------------------------------------
+2. DATA MODEL (PostgreSQL)
+--------------------------------------------------------------------

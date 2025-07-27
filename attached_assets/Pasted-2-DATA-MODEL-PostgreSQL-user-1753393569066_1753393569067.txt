@@ -1,0 +1,156 @@
+2. DATA MODEL (PostgreSQL)
+--------------------------------------------------------------------
+users(id, email, name, role, language, badge_paid_at)
+properties(id, owner_id, slug, address, rent_chf, notice_months,
+earliest_exit, key_count, main_photo_url, closed_at)
+links(id, property_id, slug)
+tasks(id, property_id, title, due_date, mandatory, status)
+visit_slots(id, property_id, starts_at, duration_min, capacity, seats_left)
+documents(id, user_id, property_id, type, url, is_valid, confidence)
+candidates(id, user_id, property_id, tenant_score,
+status, landlord_decision, badge_flag)
+payments(id, user_id, amount_chf, stripe_session_id, status)
+events(id, property_id, type, payload_json, created_at)
+dossier_templates(id, agency_name, field_mappings_json, last_verified_at)
+
+shell
+Copy
+Edit
+
+### `candidates.status` state‑machine
+dossier_submitted
+└─> dossier_incomplete
+└─> awaiting_review
+└─> approved_for_visit
+└─> visit_invited
+└─> visit_booked
+└─> visit_completed
+└─> selected_as_finalist
+└─> rejected
+
+markdown
+Copy
+Edit
+
+--------------------------------------------------------------------
+3. API ENDPOINTS
+--------------------------------------------------------------------
+POST /auth/link – send magic link
+POST /auth/callback – JWT session
+POST /properties – create/update property
+POST /links – create apply slug
+GET /properties/:slug – public intro
+POST /tasks – task CRUD
+POST /visitslots – create slots
+POST /visitslots/:id/join – book slot
+POST /documents – presigned upload URL
+POST /debtextract – canton API / fallback letter
+POST /coverletter – save / regenerate AI letter
+POST /payments – Stripe checkout (Badge)
+POST /dossier/zip – top‑3 bundle PDF + ZIP
+POST /email/send – send regie mail
+POST /ai – OpenAI proxy
+POST /landlord/decision – verdict + voucher
+
+yaml
+Copy
+Edit
+
+--------------------------------------------------------------------
+4. USER FLOWS & SCREENS
+--------------------------------------------------------------------
+### Flow 0 – Link Funnel
+0‑1 **Create Link** (inside app)  
+  • Auto‑slug -> Copy button.  
+0‑2 **Property Intro** (public)  
+  • Main photo, rent, move‑in date, **Start Application** CTA, “Data E2E encrypted”.
+
+### Flow A – Outgoing Tenant Wizard
+| ID | Screen | Main UX | Calls | LLM |
+|----|--------|---------|-------|-----|
+| A‑0 | Login | Clerk magic link / Google | `/auth/*` | — |
+| A‑1 | Property Setup | Upload lease (optional) OR manual fields. Parsed values displayed **editable** -> **Confirm** button required. | `/properties`, `/documents` | `contractParse` |
+| A‑2 | Task Checklist | obligations → task list (checkboxes, due dates) | `/tasks` | `tasksGenerate` |
+| A‑3 | Viewing Slots | slotSuggest defaults; capacity slider; Apply‑link exposure; QR flyer generator | `/visitslots` | `slotSuggest` |
+| A‑4 | Applicant Desk | Gamified tiles (Applicants, Green, Feedback); every 5 new apps → summary email; each row “Download full dossier PDF”; buttons: Reject incomplete / Auto‑email regie | `/candidates`, `/dossier/zip`, `/email/send` | `regieEmail` |
+
+### Flow B – Incoming Tenant Wizard
+| ID | Screen | Main UX / Trust Elements | Calls | LLM |
+|----|--------|--------------------------|-------|-----|
+| B‑0 | Property Intro | Apply button; trust badges (“Swiss‑hosted”, SSL, DP‑compliant) | — | — |
+| B‑1 | Join & Verify  | Magic link / Google | `/auth/*` | — |
+| B‑2 | Document Wizard | Tabs ID, Permit, **Debt (link to canton portal)**, Income; live ticks; data hosting note; progress bar; confidence banner if Doc invalid | `/documents`, `/debtextract` | `docClassify` |
+| B‑3 | AI Cover Letter | Draft 150 words; Regenerate; Save | `/coverletter` | `coverLetterDraft` |
+| B‑4 | Validation + Badge | Score dial; checklist; LLM one‑line reason; Stripe/TWINT Badge upsell | rule engine, `/payments` | `scoreExplain` |
+| B‑5 | Schedule Viewing | Slot list; seats left; one‑click book; ICS email | `/visitslots/:id/join` | — |
+| B‑6 | Landlord Verdict Prompt | Modal after `visit_completed` – Yes / No; voucher issued on submit | `/landlord/decision` | — |
+
+---
+
+## 5. LLM PROMPTS (OpenAI *responses*)
+| Name | Purpose | Response JSON |
+|------|---------|---------------|
+| contractParse | Extract rent_chf, notice_months, key_count, obligations[] | `{"rent_chf":..., "notice_months":..., "key_count":..., "obligations":[...]}` |
+| tasksGenerate | Input obligations → list `{title, days_before_exit}` | `[{},{}]` |
+| slotSuggest | Input earliest_exit → 3 ISO date‑times | `["2025‑03‑15T10:00","..."]` |
+| regieEmail | Create subject/body in regie language with candidate table | `{subject, body}` |
+| docClassify | Few‑shot classify; low confidence flagged | `{valid, confidence, doc_type, reason}` |
+| coverLetterDraft | 150‑word letter, no AI clichés | `{text}` |
+| scoreExplain | One sentence reason | `{reason}` |
+| templateMapperPrompt | Map blank PDF → `field_mappings_json` | `{mappings:...}` |
+
+*Few‑shot examples provided in `/prompts/*.json` to boost accuracy.*
+
+---
+
+## 6. VALIDATION LOGIC
+1. Net income >= 3 × rent  
+2. Debt extract clean  
+3. Permit expiry > 6 m (if non‑Swiss)  
+4. Required docs valid  
+
+Status output: `green`, `yellow` (income 2.5‑2.99 × rent), `incomplete`.
+
+---
+
+## 7. BACKGROUND WORKERS & REMINDERS
+| Trigger | Job | Monitoring |
+|---------|-----|------------|
+| Lease PDF upload | Textract → contractParse → tasksGenerate | Grafana parse latency |
+| Document upload | docClassify; mark valid | Grafana error ratio |
+| All docs valid | Compute score + candidate row | |
+| +5 candidates | Summary email to outgoing (status, tips) | |
+| 24 h inactivity | Reminder email “finish docs / add slots” | |
+| Stripe success | badge flag true, send receipt | |
+| landlord_decision | Voucher email via Stripe coupons | |
+| Supabase cron purge | Delete/anonymise per data‑retention rules | |
+
+---
+
+## 8. SECURITY & COMPLIANCE
+- TLS 1.3, HSTS, CSP  
+- JWT HttpOnly (15 min) + refresh (30 d)  
+- Supabase RLS: owner‑only read/write  
+- DPAs + SCCs with Supabase, Vercel, OpenAI, AWS, Stripe, Sentry  
+- Hosting pinned EU‑central (fra1 / eu‑central‑1)  
+- OpenAI zero‑retention header  
+- **Data minimisation**:  
+  - Sensitive docs auto‑delete 14 d after dossier email OR 30 d after slot  
+  - Process data delete/anon 60 d after property closed  
+  - Audit log kept 12 m, then hashed  
+- Privacy policy lists processors & legal bases
+
+---
+
+## 9. DIRECTORY SKELETON
+/apps
+/web-nextjs # UI + pages/api
+/functions # Supabase edge funcs
+/packages
+/ui # Tailwind component lib
+/db # Prisma schema & migrations
+/prompts # JSON few‑shot prompts
+/llm # OpenAI wrapper (rate‑lim)
+/worker
+/queues # bullmq setup
+/jobs # ocrParse, voucherIssue, reminder
