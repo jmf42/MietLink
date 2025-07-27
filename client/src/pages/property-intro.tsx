@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { TrustBadges } from "@/components/ui/trust-badges";
 import { LanguageSelector } from "@/components/ui/language-selector";
+import { useLanguage } from "@/hooks/useLanguage";
 import { type Property } from "@shared/schema";
 import { 
   Home,
@@ -27,6 +28,7 @@ interface PropertyIntroProps {
 
 export default function PropertyIntro({ params }: PropertyIntroProps) {
   const [, setLocation] = useLocation();
+  const { t } = useLanguage();
   const { slug } = params;
 
   const { data: property, isLoading, error } = useQuery<Property>({
@@ -50,12 +52,17 @@ export default function PropertyIntro({ params }: PropertyIntroProps) {
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <Card className="w-full max-w-md mx-4">
           <CardContent className="pt-6 text-center">
-            <h1 className="text-2xl font-bold text-slate-900 mb-4">Inserat nicht gefunden</h1>
+            <h1 className="text-2xl font-bold text-slate-900 mb-4">
+              {t("intro.notFound.title")}
+            </h1>
             <p className="text-slate-600 mb-6">
-              Das gesuchte Wohnungsinserat existiert nicht oder wurde entfernt.
+              {t("intro.notFound.description")}
             </p>
-            <Button onClick={() => setLocation("/")} data-testid="button-back-home">
-              Zur Startseite
+            <Button
+              onClick={() => setLocation("/")}
+              data-testid="button-back-home"
+            >
+              {t("intro.notFound.back")}
             </Button>
           </CardContent>
         </Card>
@@ -84,8 +91,12 @@ export default function PropertyIntro({ params }: PropertyIntroProps) {
               <div className="hidden md:block">
                 <LanguageSelector />
               </div>
-              <Button variant="ghost" onClick={() => window.location.href = "/api/login"} data-testid="button-login-nav">
-                Anmelden
+              <Button
+                variant="ghost"
+                onClick={() => (window.location.href = "/api/login")}
+                data-testid="button-login-nav"
+              >
+                {t("nav.login")}
               </Button>
             </div>
           </div>
@@ -97,10 +108,10 @@ export default function PropertyIntro({ params }: PropertyIntroProps) {
         <div className="text-center mb-12">
           <Badge className="mb-4 bg-green-100 text-green-800">
             <Shield className="w-3 h-3 mr-1" />
-            Verifiziertes Inserat
+            {t("intro.verifiedBadge")}
           </Badge>
           <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
-            Wunderschöne Wohnung zu vermieten
+            {t("intro.propertyHeading")}
           </h1>
           <div className="flex items-center justify-center text-slate-600 mb-2">
             <MapPin className="w-5 h-5 mr-2" />
@@ -125,7 +136,7 @@ export default function PropertyIntro({ params }: PropertyIntroProps) {
           <div className="absolute top-4 right-4 bg-white p-3 rounded-lg shadow-lg">
             <div className="text-center">
               <div className="text-2xl font-bold text-swiss-blue">CHF {property.rentChf}</div>
-              <div className="text-sm text-slate-600">pro Monat</div>
+              <div className="text-sm text-slate-600">{t("intro.perMonth")}</div>
             </div>
           </div>
         </div>
@@ -136,7 +147,7 @@ export default function PropertyIntro({ params }: PropertyIntroProps) {
             <CardContent className="p-6 text-center">
               <Euro className="w-8 h-8 text-swiss-blue mx-auto mb-3" />
               <div className="text-2xl font-bold text-slate-900 mb-1">CHF {property.rentChf}</div>
-              <div className="text-slate-600">Monatliche Miete</div>
+              <div className="text-slate-600">{t("intro.monthlyRent")}</div>
             </CardContent>
           </Card>
 
@@ -144,7 +155,7 @@ export default function PropertyIntro({ params }: PropertyIntroProps) {
             <CardContent className="p-6 text-center">
               <Key className="w-8 h-8 text-swiss-blue mx-auto mb-3" />
               <div className="text-2xl font-bold text-slate-900 mb-1">{property.keyCount}</div>
-              <div className="text-slate-600">Schlüssel</div>
+              <div className="text-slate-600">{t("intro.keys")}</div>
             </CardContent>
           </Card>
 
@@ -154,7 +165,7 @@ export default function PropertyIntro({ params }: PropertyIntroProps) {
               <div className="text-2xl font-bold text-slate-900 mb-1">
                 {new Date(property.earliestExit).toLocaleDateString('de-CH')}
               </div>
-              <div className="text-slate-600">Verfügbar ab</div>
+              <div className="text-slate-600">{t("intro.availableFrom")}</div>
             </CardContent>
           </Card>
         </div>
@@ -163,11 +174,10 @@ export default function PropertyIntro({ params }: PropertyIntroProps) {
         <Card className="border-2 border-swiss-blue bg-gradient-to-r from-swiss-blue/5 to-blue-50">
           <CardContent className="p-8 text-center">
             <h2 className="text-2xl font-bold text-slate-900 mb-4">
-              Interesse an dieser Wohnung?
+              {t("intro.interestQuestion")}
             </h2>
             <p className="text-slate-600 mb-6 max-w-2xl mx-auto">
-              Starten Sie Ihre Bewerbung in weniger als 7 Minuten. Unsere AI hilft Ihnen dabei, 
-              ein perfektes Dossier zu erstellen, das Vermieter überzeugt.
+              {t("intro.helpText")}
             </p>
             
             <Button 
@@ -176,22 +186,22 @@ export default function PropertyIntro({ params }: PropertyIntroProps) {
               onClick={handleStartApplication}
               data-testid="button-start-application"
             >
-              Jetzt bewerben
+              {t("intro.callToAction")}
               <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
 
             <div className="grid md:grid-cols-3 gap-4 text-sm">
               <div className="flex items-center justify-center space-x-2 text-green-600">
                 <Check className="w-4 h-4" />
-                <span>&lt; 7 Min. Bewerbung</span>
+                <span>{t("intro.badge.fast")}</span>
               </div>
               <div className="flex items-center justify-center space-x-2 text-green-600">
                 <Check className="w-4 h-4" />
-                <span>AI-unterstützt</span>
+                <span>{t("intro.badge.ai")}</span>
               </div>
               <div className="flex items-center justify-center space-x-2 text-green-600">
                 <Check className="w-4 h-4" />
-                <span>Sofort verfügbar</span>
+                <span>{t("intro.badge.instant")}</span>
               </div>
             </div>
           </CardContent>
@@ -200,20 +210,20 @@ export default function PropertyIntro({ params }: PropertyIntroProps) {
         {/* Trust Section */}
         <div className="mt-12 text-center">
           <h3 className="text-lg font-semibold text-slate-900 mb-4">
-            Ihre Daten sind sicher
+            {t("intro.dataSafe")}
           </h3>
           <div className="flex justify-center items-center space-x-8 text-slate-500">
             <div className="flex items-center space-x-2">
               <Shield className="w-5 h-5" />
-              <span>Swiss-hosted</span>
+              <span>{t("intro.trust.swissHosted")}</span>
             </div>
             <div className="flex items-center space-x-2">
               <Lock className="w-5 h-5" />
-              <span>E2E verschlüsselt</span>
+              <span>{t("intro.trust.encrypted")}</span>
             </div>
             <div className="flex items-center space-x-2">
               <Globe className="w-5 h-5" />
-              <span>GDPR-konform</span>
+              <span>{t("intro.trust.gdpr")}</span>
             </div>
           </div>
         </div>

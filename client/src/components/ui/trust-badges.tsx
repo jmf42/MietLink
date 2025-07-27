@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Shield, Lock, Globe, Server } from "lucide-react";
+import { useLanguage } from "@/hooks/useLanguage";
 
 interface TrustBadgesProps {
   variant?: "default" | "compact" | "detailed";
@@ -7,24 +8,25 @@ interface TrustBadgesProps {
 }
 
 export function TrustBadges({ variant = "default", className = "" }: TrustBadgesProps) {
+  const { t } = useLanguage();
   const badges = [
     {
       icon: Shield,
-      text: "Swiss-hosted",
+      text: t("intro.trust.swissHosted"),
       className: "trust-badge swiss-hosted",
-      description: "Gehostet in der Schweiz"
+      description: t("intro.trust.swissHosted")
     },
     {
       icon: Lock,
-      text: "GDPR Compliant",
-      className: "trust-badge gdpr-compliant", 
-      description: "GDPR-konform"
+      text: t("intro.trust.gdpr"),
+      className: "trust-badge gdpr-compliant",
+      description: t("intro.trust.gdpr")
     },
     {
       icon: Server,
-      text: "SSL Encrypted",
+      text: t("intro.trust.encrypted"),
       className: "trust-badge ssl-encrypted",
-      description: "SSL-verschlüsselt"
+      description: t("intro.trust.encrypted")
     }
   ];
 

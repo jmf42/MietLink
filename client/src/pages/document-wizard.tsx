@@ -16,6 +16,7 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { useLanguage } from "@/hooks/useLanguage";
 import { apiRequest } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { 
@@ -89,6 +90,7 @@ export default function DocumentWizard({ params }: DocumentWizardProps) {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { t } = useLanguage();
   const queryClient = useQueryClient();
   const { slug } = params;
   
@@ -109,8 +111,8 @@ export default function DocumentWizard({ params }: DocumentWizardProps) {
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
       toast({
-        title: "Anmeldung erforderlich",
-        description: "Sie müssen sich anmelden, um sich zu bewerben.",
+        title: t("wizard.loginRequired.title"),
+        description: t("wizard.loginRequired.description"),
         variant: "destructive",
       });
       setTimeout(() => {
@@ -166,8 +168,10 @@ export default function DocumentWizard({ params }: DocumentWizardProps) {
       refetchDocuments();
       calculateScore();
       toast({
-        title: "Dokument hochgeladen",
-        description: `${document.filename} wurde erfolgreich validiert.`,
+        title: t("wizard.documentUploaded.title"),
+        description: t("wizard.documentUploaded.description", {
+          filename: document.filename,
+        }),
       });
     },
     onError: (error: Error) => {
@@ -183,7 +187,7 @@ export default function DocumentWizard({ params }: DocumentWizardProps) {
         return;
       }
       toast({
-        title: "Upload-Fehler",
+        title: t("wizard.uploadError.title"),
         description: error.message,
         variant: "destructive",
       });
@@ -210,8 +214,8 @@ export default function DocumentWizard({ params }: DocumentWizardProps) {
     onSuccess: (data) => {
       form.setValue("coverLetter", data.text);
       toast({
-        title: "Motivationsschreiben erstellt",
-        description: "AI hat ein personalisiertes Schreiben für Sie erstellt.",
+        title: t("wizard.coverLetterGenerated.title"),
+        description: t("wizard.coverLetterGenerated.description"),
       });
     },
     onError: (error: Error) => {
@@ -227,8 +231,8 @@ export default function DocumentWizard({ params }: DocumentWizardProps) {
         return;
       }
       toast({
-        title: "Fehler",
-        description: "Motivationsschreiben konnte nicht erstellt werden.",
+        title: t("wizard.generalError.title"),
+        description: t("wizard.coverLetterFailed"),
         variant: "destructive",
       });
     },
@@ -247,8 +251,8 @@ export default function DocumentWizard({ params }: DocumentWizardProps) {
     },
     onSuccess: () => {
       toast({
-        title: "Bewerbung eingereicht!",
-        description: "Ihre Bewerbung wurde erfolgreich eingereicht.",
+        title: t("wizard.applicationSubmitted.title"),
+        description: t("wizard.applicationSubmitted.description"),
       });
       setCurrentStep(5); // Move to confirmation step
     },
@@ -265,8 +269,8 @@ export default function DocumentWizard({ params }: DocumentWizardProps) {
         return;
       }
       toast({
-        title: "Fehler",
-        description: "Bewerbung konnte nicht eingereicht werden.",
+        title: t("wizard.generalError.title"),
+        description: t("wizard.applicationError"),
         variant: "destructive",
       });
     },
