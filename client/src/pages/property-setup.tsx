@@ -74,8 +74,8 @@ export default function PropertySetup() {
     },
     onError: (error: Error) => {
       toast({
-        title: "Fehler",
-        description: "Vertrag konnte nicht analysiert werden: " + error.message,
+        title: t("common.error"),
+        description: t("setup.parseError") + error.message,
         variant: "destructive",
       });
     },
@@ -89,15 +89,15 @@ export default function PropertySetup() {
     onSuccess: (property) => {
       queryClient.invalidateQueries({ queryKey: ["/api/properties/my"] });
       toast({
-        title: "Erfolg!",
-        description: "Ihr Inserat wurde erfolgreich erstellt.",
+        title: t("common.success"),
+        description: t("setup.created"),
       });
       setLocation(`/property/${property.id}/desk`);
     },
     onError: (error: Error) => {
       toast({
-        title: "Fehler",
-        description: "Inserat konnte nicht erstellt werden: " + error.message,
+        title: t("common.error"),
+        description: t("setup.createError") + error.message,
         variant: "destructive",
       });
     },
@@ -131,7 +131,7 @@ export default function PropertySetup() {
               <Link href="/">
                 <Button variant="ghost" size="sm" data-testid="button-back">
                   <ArrowLeft className="w-4 h-4 mr-2" />
-                  Zurück
+                  {t("common.back")}
                 </Button>
               </Link>
               <div className="flex items-center space-x-2">
@@ -141,7 +141,9 @@ export default function PropertySetup() {
                 <span className="text-xl font-bold text-slate-900">MietLink</span>
               </div>
             </div>
-            <Badge variant="outline">Schritt {step} von 3</Badge>
+            <Badge variant="outline">
+              {t("setup.step")} {step} {t("setup.of")} 3
+            </Badge>
           </div>
         </div>
       </nav>
@@ -151,10 +153,10 @@ export default function PropertySetup() {
           <div className="space-y-8">
             <div className="text-center">
               <h1 className="text-3xl font-bold text-slate-900 mb-4">
-                Wohnung einrichten
+                {t("setup.title")}
               </h1>
               <p className="text-xl text-slate-600">
-                Laden Sie Ihren Mietvertrag hoch oder geben Sie die Daten manuell ein
+                {t("setup.subtitle")}
               </p>
             </div>
 
@@ -165,9 +167,9 @@ export default function PropertySetup() {
                   <div className="w-16 h-16 bg-swiss-blue rounded-2xl flex items-center justify-center mx-auto mb-4">
                     <Upload className="text-white w-8 h-8" />
                   </div>
-                  <CardTitle>AI-Analyse (Empfohlen)</CardTitle>
+                  <CardTitle>{t("setup.aiAnalysis")}</CardTitle>
                   <p className="text-slate-600">
-                    Mietvertrag hochladen - AI extrahiert automatisch alle wichtigen Daten
+                    {t("setup.aiDescription")}
                   </p>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -180,12 +182,12 @@ export default function PropertySetup() {
                   {parseContractMutation.isPending && (
                     <div className="flex items-center justify-center p-4">
                       <Loader2 className="w-6 h-6 animate-spin mr-2" />
-                      <span>Vertrag wird analysiert...</span>
+                      <span>{t("setup.analyzingContract")}</span>
                     </div>
                   )}
                   <div className="flex items-center space-x-2 text-sm text-green-600">
                     <Check className="w-4 h-4" />
-                    <span>Unterstützt alle 5 Sprachen</span>
+                    <span>{t("setup.supportedLanguages")}</span>
                   </div>
                 </CardContent>
               </Card>
@@ -196,19 +198,19 @@ export default function PropertySetup() {
                   <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
                     <FileText className="text-slate-600 w-8 h-8" />
                   </div>
-                  <CardTitle>Manuelle Eingabe</CardTitle>
+                  <CardTitle>{t("setup.manualEntry")}</CardTitle>
                   <p className="text-slate-600">
-                    Wohnungsdaten direkt eingeben
+                    {t("setup.manualEntryDesc")}
                   </p>
                 </CardHeader>
                 <CardContent>
-                  <Button 
-                    variant="outline" 
-                    className="w-full" 
+                  <Button
+                    variant="outline"
+                    className="w-full"
                     onClick={skipToManual}
                     data-testid="button-manual-entry"
                   >
-                    Manuell eingeben
+                    {t("setup.manualEntryButton")}
                   </Button>
                 </CardContent>
               </Card>
@@ -220,10 +222,10 @@ export default function PropertySetup() {
           <div className="space-y-8">
             <div className="text-center">
               <h1 className="text-3xl font-bold text-slate-900 mb-4">
-                Wohnungsdaten bestätigen
+                {t("setup.confirmData")}
               </h1>
               <p className="text-xl text-slate-600">
-                Überprüfen und ergänzen Sie die extrahierten Daten
+                {t("setup.confirmDataDesc")}
               </p>
             </div>
 
@@ -233,7 +235,9 @@ export default function PropertySetup() {
                   <div className="flex items-center space-x-2 text-green-800">
                     <Check className="w-5 h-5" />
                     <span className="font-medium">
-                      AI hat {parsedData.obligations?.length || 0} Pflichten erkannt und automatisch extrahiert
+                      {t("setup.obligationsFound", {
+                        count: parsedData.obligations?.length || 0,
+                      })}
                     </span>
                   </div>
                 </CardContent>
@@ -246,7 +250,7 @@ export default function PropertySetup() {
                   <CardHeader>
                     <CardTitle className="flex items-center space-x-2">
                       <MapPin className="w-5 h-5" />
-                      <span>Standort & Grunddaten</span>
+                      <span>{t("setup.locationHeading")}</span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
@@ -255,10 +259,10 @@ export default function PropertySetup() {
                       name="address"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Vollständige Adresse</FormLabel>
+                          <FormLabel>{t("setup.fullAddress")}</FormLabel>
                           <FormControl>
                             <Textarea
-                              placeholder="Musterstrasse 123, 8001 Zürich"
+                              placeholder={t("setup.addressPlaceholder")}
                               {...field}
                               data-testid="input-address"
                             />
@@ -276,7 +280,7 @@ export default function PropertySetup() {
                           <FormItem>
                             <FormLabel className="flex items-center space-x-2">
                               <Euro className="w-4 h-4" />
-                              <span>Miete (CHF/Monat)</span>
+                              <span>{t("setup.rent")}</span>
                             </FormLabel>
                             <FormControl>
                               <Input
@@ -298,7 +302,7 @@ export default function PropertySetup() {
                           <FormItem>
                             <FormLabel className="flex items-center space-x-2">
                               <Key className="w-4 h-4" />
-                              <span>Anzahl Schlüssel</span>
+                              <span>{t("setup.keyCount")}</span>
                             </FormLabel>
                             <FormControl>
                               <Input
@@ -321,7 +325,7 @@ export default function PropertySetup() {
                         name="noticeMonths"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Kündigungsfrist (Monate)</FormLabel>
+                            <FormLabel>{t("setup.noticeMonths")}</FormLabel>
                             <FormControl>
                               <Input
                                 type="number"
@@ -344,7 +348,7 @@ export default function PropertySetup() {
                           <FormItem>
                             <FormLabel className="flex items-center space-x-2">
                               <Calendar className="w-4 h-4" />
-                              <span>Frühestes Auszugsdatum</span>
+                              <span>{t("setup.earliestExit")}</span>
                             </FormLabel>
                             <FormControl>
                               <Input
@@ -363,7 +367,7 @@ export default function PropertySetup() {
 
                 <div className="flex justify-between">
                   <Button variant="outline" onClick={() => setStep(1)} data-testid="button-back-step">
-                    Zurück
+                    {t("common.back")}
                   </Button>
                   <Button 
                     type="submit" 
@@ -373,12 +377,12 @@ export default function PropertySetup() {
                     {createPropertyMutation.isPending ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Wird erstellt...
+                        {t("setup.creating")}
                       </>
                     ) : (
                       <>
                         <Check className="w-4 h-4 mr-2" />
-                        Inserat erstellen
+                        {t("setup.createListing")}
                       </>
                     )}
                   </Button>
