@@ -423,7 +423,7 @@ const translations = {
     "landing.footer.copyright": "© 2024 MietLink AG. Tous droits réservés.",
     "landing.footer.hostedInSwitzerland": "Hébergé en Suisse",
     "landing.footer.gdprCompliant": "Conforme au RGPD",
-    
+
     // Home dashboard
     "home.welcome": "Bienvenue",
     "home.dashboard": "Tableau de bord",
@@ -457,6 +457,20 @@ const translations = {
     "home.recentActivity.noActivity": "Aucune activité pour l'instant",
     "home.tips.title": "💡 Astuce",
     "home.tips.description": "Téléchargez des photos de votre appartement pour obtenir 3x plus de candidatures qualifiées !",
+
+    // Property setup
+    "setup.contract.parsed": "Contrat analysé",
+    "setup.contract.parsed.description": "Les données clés ont été extraites automatiquement.",
+
+    // Common
+    "common.loading": "Chargement...",
+    "common.error": "Une erreur s'est produite",
+    "common.success": "Succès",
+    "common.cancel": "Annuler",
+    "common.save": "Enregistrer",
+    "common.next": "Suivant",
+    "common.back": "Retour",
+    "common.selectLanguage": "Choisir la langue",
   },
   
   it: {
@@ -560,6 +574,54 @@ const translations = {
     "landing.footer.copyright": "© 2024 MietLink AG. Tutti i diritti riservati.",
     "landing.footer.hostedInSwitzerland": "Ospitato in Svizzera",
     "landing.footer.gdprCompliant": "Conforme al GDPR",
+
+    // Home dashboard
+    "home.welcome": "Bentornato",
+    "home.dashboard": "Dashboard",
+    "home.dashboard.description": "Gestisci le tue proprietà e monitora le candidature in tempo reale.",
+    "home.newProperty": "Nuova proprietà",
+    "home.newProperty.description": "Crea annuncio",
+    "home.properties": "Le mie proprietà",
+    "home.applications": "Candidature",
+    "home.applications.description": "Gestisci i candidati",
+    "home.documents": "Documenti",
+    "home.documents.description": "Gestisci e verifica",
+    "home.appointments": "Appuntamenti",
+    "home.appointments.description": "Programma visite",
+    "home.noProperties": "Nessun annuncio ancora",
+    "home.noProperties.description": "Crea il tuo primo annuncio e trova automaticamente il perfetto inquilino sostituto.",
+    "home.createFirst": "Crea il primo annuncio",
+    "home.property.rent": "Affitto",
+    "home.property.keys": "Chiavi",
+    "home.property.closed": "Chiuso",
+    "home.property.active": "Attivo",
+    "home.property.applications": "Candidature",
+    "home.property.views": "Visite",
+    "home.property.appointments": "Appuntamenti",
+    "home.property.manage": "Gestisci",
+    "home.property.share": "Condividi",
+    "home.stats.title": "Statistiche",
+    "home.stats.activeListings": "Annunci attivi",
+    "home.stats.totalApplications": "Candidature totali",
+    "home.stats.successRate": "Tasso di successo",
+    "home.recentActivity.title": "Attività recenti",
+    "home.recentActivity.noActivity": "Nessuna attività",
+    "home.tips.title": "💡 Consiglio",
+    "home.tips.description": "Carica foto del tuo appartamento per ricevere 3x più candidature qualificate!",
+
+    // Property setup
+    "setup.contract.parsed": "Contratto analizzato",
+    "setup.contract.parsed.description": "I dati principali sono stati estratti automaticamente.",
+
+    // Common
+    "common.loading": "Caricamento...",
+    "common.error": "Si è verificato un errore",
+    "common.success": "Operazione riuscita",
+    "common.cancel": "Annulla",
+    "common.save": "Salva",
+    "common.next": "Avanti",
+    "common.back": "Indietro",
+    "common.selectLanguage": "Seleziona lingua",
   },
   
   es: {
@@ -663,6 +725,54 @@ const translations = {
     "landing.footer.copyright": "© 2024 MietLink AG. Todos los derechos reservados.",
     "landing.footer.hostedInSwitzerland": "Alojado en Suiza",
     "landing.footer.gdprCompliant": "Cumple con GDPR",
+
+    // Home dashboard
+    "home.welcome": "Bienvenido de nuevo",
+    "home.dashboard": "Panel de control",
+    "home.dashboard.description": "Administra tus propiedades y sigue las solicitudes en tiempo real.",
+    "home.newProperty": "Nueva propiedad",
+    "home.newProperty.description": "Crear anuncio",
+    "home.properties": "Mis propiedades",
+    "home.applications": "Solicitudes",
+    "home.applications.description": "Gestionar candidatos",
+    "home.documents": "Documentos",
+    "home.documents.description": "Gestionar y verificar",
+    "home.appointments": "Citas",
+    "home.appointments.description": "Programar visitas",
+    "home.noProperties": "Aún sin anuncios",
+    "home.noProperties.description": "Crea tu primer anuncio de propiedad y encuentra automáticamente al inquilino sucesor perfecto.",
+    "home.createFirst": "Crear primer anuncio",
+    "home.property.rent": "Alquiler",
+    "home.property.keys": "Llaves",
+    "home.property.closed": "Cerrado",
+    "home.property.active": "Activo",
+    "home.property.applications": "Solicitudes",
+    "home.property.views": "Vistas",
+    "home.property.appointments": "Citas",
+    "home.property.manage": "Gestionar",
+    "home.property.share": "Compartir",
+    "home.stats.title": "Estadísticas",
+    "home.stats.activeListings": "Anuncios activos",
+    "home.stats.totalApplications": "Solicitudes totales",
+    "home.stats.successRate": "Tasa de éxito",
+    "home.recentActivity.title": "Actividad reciente",
+    "home.recentActivity.noActivity": "Sin actividad aún",
+    "home.tips.title": "💡 Consejo",
+    "home.tips.description": "¡Sube fotos de tu apartamento para obtener 3x más solicitudes calificadas!",
+
+    // Property setup
+    "setup.contract.parsed": "Contrato analizado",
+    "setup.contract.parsed.description": "Los datos clave se han extraído automáticamente.",
+
+    // Common
+    "common.loading": "Cargando...",
+    "common.error": "Ocurrió un error",
+    "common.success": "Éxito",
+    "common.cancel": "Cancelar",
+    "common.save": "Guardar",
+    "common.next": "Siguiente",
+    "common.back": "Atrás",
+    "common.selectLanguage": "Seleccionar idioma",
   }
 };
 
