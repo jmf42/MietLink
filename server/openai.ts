@@ -31,13 +31,6 @@ export interface ScoreExplainResult {
 }
 
 // Export all functions for use in routes
-export default {
-  parseContract,
-  generateTasks,
-  classifyDocument,
-  generateCoverLetter,
-  explainScore
-};
 
 export async function parseContract(text: string): Promise<ContractParseResult> {
   try {
