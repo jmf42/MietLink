@@ -12,6 +12,7 @@ import PropertySetup from "@/pages/property-setup";
 import PropertyIntro from "@/pages/property-intro";
 import DocumentWizard from "@/pages/document-wizard";
 import ApplicantDesk from "@/pages/applicant-desk";
+import TaskChecklist from "@/pages/task-checklist";
 import DocumentsPage from "@/pages/documents";
 import AppointmentsPage from "@/pages/appointments";
 import ApplicationsPage from "@/pages/applications";
@@ -34,6 +35,7 @@ function Router() {
           <Route path="/appointments" component={AppointmentsPage} />
           <Route path="/applications" component={ApplicationsPage} />
           <Route path="/property/:slug/apply" component={DocumentWizard} />
+          <Route path="/property/:propertyId/tasks" component={TaskChecklist} />
           <Route path="/property/:propertyId/desk" component={ApplicantDesk} />
         </>
       )}

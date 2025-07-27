@@ -57,8 +57,22 @@ export default function PropertySetup() {
   });
 
   const parseContractMutation = useMutation({
-    mutationFn: async (text: string) => {
-      const response = await apiRequest("POST", "/api/ai/parse-contract", { text });
+    mutationFn: async (payload: { text?: string; file?: File }) => {
+      if (payload.file) {
+        const formData = new FormData();
+        formData.append("contract", payload.file);
+        const res = await fetch("/api/ai/parse-contract-file", {
+          method: "POST",
+          body: formData,
+          credentials: "include",
+        });
+        if (!res.ok) throw new Error(`${res.status}: ${await res.text()}`);
+        return res.json();
+      }
+
+      const response = await apiRequest("POST", "/api/ai/parse-contract", {
+        text: payload.text,
+      });
       return response.json();
     },
     onSuccess: (data) => {
@@ -86,13 +100,27 @@ export default function PropertySetup() {
       const response = await apiRequest("POST", "/api/properties", data);
       return response.json();
     },
-    onSuccess: (property) => {
+    onSuccess: async (property) => {
       queryClient.invalidateQueries({ queryKey: ["/api/properties/my"] });
+
+      if (parsedData?.obligations?.length) {
+        try {
+          await apiRequest("POST", "/api/tasks/generate", {
+            propertyId: property.id,
+            obligations: parsedData.obligations,
+            earliestExit: property.earliestExit,
+          });
+          queryClient.invalidateQueries({ queryKey: ["/api/tasks", property.id] });
+        } catch {
+          // ignore task errors for now
+        }
+      }
+
       toast({
         title: "Erfolg!",
         description: "Ihr Inserat wurde erfolgreich erstellt.",
       });
-      setLocation(`/property/${property.id}/desk`);
+      setLocation(`/property/${property.id}/tasks`);
     },
     onError: (error: Error) => {
       toast({
@@ -104,13 +132,17 @@ export default function PropertySetup() {
   });
 
   const handleContractUpload = (file: File) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const text = e.target?.result as string;
-      setContractText(text);
-      parseContractMutation.mutate(text);
-    };
-    reader.readAsText(file);
+    if (file.type === "application/pdf") {
+      parseContractMutation.mutate({ file });
+    } else {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const text = e.target?.result as string;
+        setContractText(text);
+        parseContractMutation.mutate({ text });
+      };
+      reader.readAsText(file);
+    }
   };
 
   const onSubmit = (data: PropertyFormData) => {

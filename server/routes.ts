@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import multer from "multer";
 import * as openai from "./openai";
+import pdfParse from "pdf-parse/lib/pdf-parse.js";
 import { insertPropertySchema, insertCandidateSchema, insertDocumentSchema, insertTaskSchema, insertVisitSlotSchema } from "@shared/schema";
 import { randomUUID } from "crypto";
 
@@ -35,17 +36,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/properties', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
+      const { obligations } = req.body;
       const propertyData = insertPropertySchema.parse({
         ...req.body,
         ownerId: userId,
-        slug: randomUUID().substring(0, 8)
+        slug: randomUUID().substring(0, 8),
       });
-      
+
       const property = await storage.createProperty(propertyData);
+
+      // If obligations were parsed from the contract, generate tasks
+      if (Array.isArray(obligations) && obligations.length > 0) {
+        try {
+          const tasks = await openai.generateTasks(obligations);
+          for (const task of tasks) {
+            const due = propertyData.earliestExit
+              ? new Date(
+                  new Date(propertyData.earliestExit).getTime() -
+                    task.days_before_exit * 24 * 60 * 60 * 1000,
+                )
+                  .toISOString()
+                  .slice(0, 10)
+              : null;
+
+            await storage.createTask({
+              propertyId: property.id,
+              title: task.title,
+              dueDate: due as any,
+              mandatory: true,
+              status: 'pending',
+            });
+          }
+        } catch (err) {
+          console.error('Error generating tasks:', err);
+        }
+      }
+
       res.json(property);
     } catch (error) {
-      console.error("Error creating property:", error);
-      res.status(400).json({ message: "Failed to create property" });
+      console.error('Error creating property:', error);
+      res.status(400).json({ message: 'Failed to create property' });
     }
   });
 
@@ -90,6 +120,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to parse contract" });
     }
   });
+
+  app.post(
+    '/api/ai/parse-contract-file',
+    isAuthenticated,
+    upload.single('contract'),
+    async (req: any, res) => {
+      try {
+        if (!req.file) {
+          return res.status(400).json({ message: 'No file uploaded' });
+        }
+
+        let text = '';
+        if (req.file.mimetype === 'application/pdf') {
+          const parsed = await pdfParse(req.file.buffer);
+          text = parsed.text;
+        } else {
+          text = req.file.buffer.toString('utf8');
+        }
+
+        const parsedData = await openai.parseContract(text);
+        res.json(parsedData);
+      } catch (error) {
+        console.error('Error parsing contract file:', error);
+        res.status(500).json({ message: 'Failed to parse contract file' });
+      }
+    },
+  );
 
   // Document upload and parsing
   app.post('/api/documents/upload', isAuthenticated, upload.single('document'), async (req: any, res) => {
@@ -147,17 +204,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // AI-powered contract parsing
-  app.post('/api/ai/parse-contract', isAuthenticated, async (req, res) => {
-    try {
-      const { text } = req.body;
-      const result = await openai.parseContract(text);
-      res.json(result);
-    } catch (error) {
-      console.error("Error parsing contract:", error);
-      res.status(500).json({ message: "Failed to parse contract" });
-    }
-  });
 
   // AI cover letter generation
   app.post('/api/ai/cover-letter', isAuthenticated, async (req: any, res) => {
@@ -200,6 +246,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching tasks:", error);
       res.status(500).json({ message: "Failed to fetch tasks" });
+    }
+  });
+
+  app.post('/api/tasks/generate', isAuthenticated, async (req, res) => {
+    try {
+      const { propertyId, obligations, earliestExit } = req.body;
+      if (!propertyId || !Array.isArray(obligations)) {
+        return res
+          .status(400)
+          .json({ message: 'propertyId and obligations required' });
+      }
+
+      const tasks = await openai.generateTasks(obligations);
+      const created = [];
+
+      for (const task of tasks) {
+        const due = earliestExit
+          ? new Date(
+              new Date(earliestExit).getTime() -
+                task.days_before_exit * 24 * 60 * 60 * 1000,
+            )
+              .toISOString()
+              .slice(0, 10)
+          : null;
+
+        const newTask = await storage.createTask({
+          propertyId,
+          title: task.title,
+          dueDate: due as any,
+          mandatory: true,
+          status: 'pending',
+        });
+        created.push(newTask);
+      }
+
+      res.json(created);
+    } catch (error) {
+      console.error('Error generating tasks:', error);
+      res.status(500).json({ message: 'Failed to generate tasks' });
+    }
+  });
+
+  app.post('/api/tasks/:id', isAuthenticated, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const task = await storage.updateTask(id, req.body);
+      res.json(task);
+    } catch (error) {
+      console.error('Error updating task:', error);
+      res.status(400).json({ message: 'Failed to update task' });
     }
   });
 

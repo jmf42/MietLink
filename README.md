@@ -178,7 +178,10 @@ npm run db:studio    # Open Drizzle Studio (database GUI)
 
 ### AI Services
 - `POST /api/ai/parse-contract` - Parse rental contract
+- `POST /api/ai/parse-contract-file` - Parse rental contract from PDF upload
 - `POST /api/documents/upload` - Upload and classify documents
+- `POST /api/tasks/generate` - Generate tasks from obligations
+- `POST /api/tasks/:id` - Update a task
 
 ## 🛡️ Security Considerations
 
