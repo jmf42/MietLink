@@ -3,7 +3,10 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import multer from "multer";
 import * as openai from "./openai";
+bckthf-codex/review-entire-codebase-and-functionality
+import pdfParse from "pdf-parse/lib/pdf-parse.js";
 import pdfParse from "pdf-parse";
+main
 import { insertPropertySchema, insertCandidateSchema, insertDocumentSchema, insertTaskSchema, insertVisitSlotSchema } from "@shared/schema";
 import { randomUUID } from "crypto";
 
